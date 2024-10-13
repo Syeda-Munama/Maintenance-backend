@@ -1,74 +1,4 @@
 
-// const express = require('express');
-// // import express from 'express';
-// const router = express.Router();
-// const db = require('../config/db.cjs');
-// const moment = require('moment');
-
-// // Route to handle Preventive Maintenance Log form submission
-// router.post('/submit-log', (req, res) => {
-//     const {
-//         department,
-//         operator_name,
-//         machine_no,
-//         maintenance_type,
-//         schedule_date,
-//         start_date_time,
-//         end_date_time,
-//         total_time,
-//         pms_package,
-//         issued_to,
-//         issued_by,
-//         remarks,
-//     } = req.body;
-
-//     const formattedScheduleDate = moment(schedule_date, "D-MMM-YYYY").format("YYYY-MM-DD");
-
-//     const sql = `
-//       INSERT INTO Preventive_Maintenance_Log (
-//         department, 
-//         operator_name, 
-//         machine_no, 
-//         maintenance_type, 
-//         schedule_date, 
-//         start_date_time, 
-//         end_date_time, 
-//         total_time, 
-//         pms_package, 
-//         issued_to, 
-//         issued_by, 
-//         remarks
-//       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-//     db.query(
-//         sql,
-//         [
-//             department,
-//             operator_name,
-//             machine_no,
-//             maintenance_type,
-//             formattedScheduleDate, 
-//             start_date_time,
-//             end_date_time,
-//             total_time,
-//             pms_package,
-//             issued_to,
-//             issued_by,
-//             remarks,
-//         ],
-//         (err, result) => {
-//             if (err) {
-//                 console.error("Error inserting data:", err);
-//                 res.status(500).json({ error: "Failed to submit data" });
-//             } else {
-//                 console.log("Data inserted successfully:", result);
-//                 res.json({ success: true });
-//             }
-//         }
-//     );
-// });
-
-// module.exports = router;
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db.cjs');
@@ -179,5 +109,39 @@ router.post('/submit-log', (req, res) => {
         }
     );
 });
+
+// Route to fetch all breakdown logs
+router.get('/breakdowns', (req, res) => {
+    const sql = 'SELECT * FROM Breakdown_Log';
+    
+    db.query(sql, (err, results) => {
+      if (err) {
+        console.error("Error fetching breakdown logs:", err);
+        return res.status(500).json({ error: "Failed to retrieve breakdown logs" });
+      }
+      
+      res.json(results);
+    });
+  });
+  
+// Route to fetch breakdown log by ID
+router.get('/breakdowns/:log_id', (req, res) => {
+    const { log_id } = req.params;
+    const sql = 'SELECT * FROM Breakdown_Log WHERE log_id = ?';
+    
+    db.query(sql, [log_id], (err, result) => {
+      if (err) {
+        console.error("Error fetching breakdown log by ID:", err);
+        return res.status(500).json({ error: "Failed to retrieve breakdown log" });
+      }
+      
+      if (result.length === 0) {
+        return res.status(404).json({ message: "Breakdown log not found" });
+      }
+      
+      res.json(result[0]);
+    });
+  });
+  
 
 module.exports = router;
