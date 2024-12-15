@@ -8,7 +8,7 @@ router.get('/combined-data/:part_id/:year', async (req, res) => {
 
   try {
     // Fetch parts data
-    const [partData] = await db.promise().query('SELECT part_id, part_name, part_code FROM Parts WHERE part_id = ?', [part_id]);
+    const [partData] = await db.promise().query('SELECT part_id, part_name, part_code FROM parts WHERE part_id = ?', [part_id]);
     
     if (!partData.length) {
       return res.status(404).json({ message: "Part not found" });

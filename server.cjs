@@ -8,6 +8,7 @@ const partsRoutes = require('./routes/parts.cjs');
 const inventoryRoutes = require('./routes/inventory.cjs');
 const summaryRoutes = require('./routes/yearly_summary.cjs');
 const breakdownRoutes =require('./routes/breakdown.cjs')
+const getinventory = require('./routes/fetchInventory.cjs')
 
 
 
@@ -24,7 +25,7 @@ app.use('/api/parts', partsRoutes);          // All routes for parts
 app.use('/api/inventory', inventoryRoutes);  // All routes for inventory
 app.use('/api/yearly-summary', summaryRoutes);      // All routes for summary
 app.use('/api/breakdown-log', breakdownRoutes);
-
+app.use('/api/get-inventory', getinventory);
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

@@ -2,6 +2,10 @@ const express = require("express");
 const router = express.Router();
 const db = require("../config/db.cjs"); // Assuming a db.cjs file that handles DB connection
 const { body, validationResult } = require("express-validator");
+const XLSX = require("xlsx");
+const PDFDocument = require("pdfkit");
+
+const moment = require("moment");
 
 // Route to handle Breakdown Log creation and parts usage
 router.post(
@@ -116,72 +120,16 @@ function formatDate(dateString) {
 }
 
 
-// Route to fetch all breakdown logs
-router.get("/", async (req, res) => {
-  const { department, machineNo, startDate, endDate } = req.query;
+router.get('/logs', (req, res) => {
+  const fetchLogsSQL = 'SELECT * FROM breakdown_log';
 
-  // SQL query with optional filters
-  let sql = `
-    SELECT * FROM Breakdown_Log
-    WHERE 1=1
-  `;
-
-  const queryParams = [];
-
-  // Apply filters if provided
-  if (department) {
-    sql += " AND department = ?";
-    queryParams.push(department);
-  }
-  if (machineNo) {
-    sql += " AND machine_no = ?";
-    queryParams.push(machineNo);
-  }
-  if (startDate && endDate) {
-    sql += " AND date BETWEEN ? AND ?";
-    queryParams.push(startDate, endDate);
-  }
-
-  try {
-    const [results] = await db.promise().query(sql, queryParams);
-    res.json(results);
-  } catch (error) {
-    console.error("Error fetching breakdown logs:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-// Route to fetch breakdown log by ID along with used parts
-router.get("/:log_id", async (req, res) => {
-  const { log_id } = req.params;
-
-  try {
-    // Fetch the breakdown log by its ID
-    const [breakdownLogResult] = await db.promise().query(
-      `SELECT * FROM Breakdown_Log WHERE log_id = ?`,
-      [log_id]
-    );
-
-    if (breakdownLogResult.length === 0) {
-      return res.status(404).json({ message: "Breakdown log not found" });
-    }
-
-    const breakdownLog = breakdownLogResult[0];
-
-    // Fetch the parts used in this breakdown log
-    const [partsUsedResult] = await db.promise().query(
-      `SELECT * FROM Parts_Used WHERE log_id = ?`,
-      [log_id]
-    );
-
-    return res.json({
-      breakdownLog,
-      partsUsed: partsUsedResult,
-    });
-  } catch (error) {
-    console.error("Error fetching breakdown log or parts used:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
+  db.query(fetchLogsSQL, (err, results) => {
+      if (err) {
+          console.error("Error fetching Breakdown Log data:", err);
+          return res.status(500).json({ error: "Failed to retrieve data" });
+      }
+      res.json(results);
+  });
 });
 
 module.exports = router;
